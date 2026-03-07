@@ -1,0 +1,127 @@
+sources: []
+# 每个 source 支持:
+# - path: 自动按后缀推断 jsonl/csv/parquet；arrow/feather 可显式 format
+# - format: 可选，jsonl / json / csv / parquet / arrow / feather
+# - adapter: 把源字段映射到统一 Agent schema
+
+runtime:
+  work_dir: /home/whr/pp/main/agent_data_clean/outputs/agent_posttrain_pipeline
+  num_proc: 1
+
+sharding:
+  enabled: true
+  rows_per_shard: 50000
+  export_type: parquet
+
+# 直接复用 Data-Juicer DocumentMinhashDeduplicator
+# tokenization 可选: space / punctuation / character / sentencepiece
+dedup:
+  enabled: true
+  tokenization: space
+  window_size: 5
+  lowercase: true
+  ignore_pattern: null
+  tokenizer_model: null
+  num_permutations: 256
+  jaccard_threshold: 0.8
+
+contamination:
+  enabled: false
+  reference_sources: []
+  ngram_size: 13
+  max_contamination_ratio: 0.2
+  min_matched_ngrams: 1
+  normalize_case: true
+  strip_punctuation: true
+
+quality:
+  enabled: true
+  hf_tokenizer: null
+  min_tokens: 16
+  max_tokens: 8192
+  min_turns: 1
+  max_turns: null
+  min_assistant_turns: 1
+  percentiles: [0.1, 0.25, 0.5, 0.75, 0.9]
+  sample_for_report: 1000
+
+augmentation:
+  enabled: false
+  backend: async_http
+  model: null
+  base_url: null
+  api_key: null
+  api_key_env: OPENAI_API_KEY
+  callable_path: null
+  is_hf_model: true
+  prompt_template: "{text}"
+  system_prompt: null
+  batch_size: 32
+  max_concurrency: 16
+  timeout: 120.0
+  max_retries: 3
+  sampling_params: {}
+  output_field: augmentation
+  output_text_key: generated_answer
+  keep_prompt: false
+
+judge:
+  enabled: false
+  backend: async_http
+  model: null
+  base_url: null
+  api_key: null
+  api_key_env: OPENAI_API_KEY
+  callable_path: null
+  is_hf_model: true
+  prompt_template: |
+    You are a strict judge for agent-training data.
+    Score the sample from 0 to 10 and return JSON with keys score and reason.
+
+    {text}
+  system_prompt: null
+  batch_size: 16
+  max_concurrency: 8
+  timeout: 120.0
+  max_retries: 3
+  sampling_params: {}
+  output_field: judge
+  score_key: score
+  reason_key: reason
+  raw_response_key: raw_response
+  score_scale: 10.0
+  min_score: null
+  keep_prompt: false
+
+export:
+  path: /home/whr/pp/main/agent_data_clean/outputs/agent_posttrain_pipeline/cleaned_agent_data.parquet
+  export_type: null
+  export_shard_size: 0
+  export_stats: true
+  keep_stats_in_result: false
+  keep_hashes_in_result: false
+
+visualization:
+  enabled: true
+  output_dir: /home/whr/pp/main/agent_data_clean/outputs/agent_posttrain_pipeline/visualizations
+  include_samples: 200
+
+monitoring:
+  enabled: true
+  output_dir: /home/whr/pp/main/agent_data_clean/outputs/agent_posttrain_pipeline/monitoring
+  job_name: agent_posttrain_pipeline
+  emit_json: true
+  emit_prometheus_text: true
+  labels:
+    env: base
+
+# 通过 class_path 注入额外 Data-Juicer 算子或本项目 operator
+# hook 可选:
+# - post_normalized
+# - post_dedup
+# - post_contamination
+# - post_quality
+# - post_augmentation
+# - post_judge
+# - pre_export
+operators: []

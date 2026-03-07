@@ -1,0 +1,49 @@
+sources:
+  - path: /data/agent/train_data.parquet
+    adapter:
+      source_name: ray_vllm_source
+      id_key: id
+      messages_key: messages
+
+runtime:
+  work_dir: /var/lib/agent-posttrain-ray-vllm
+  num_proc: 4
+
+quality:
+  enabled: true
+  hf_tokenizer: Qwen/Qwen2.5-7B-Instruct
+  min_tokens: 32
+  max_tokens: 8192
+  min_turns: 2
+  min_assistant_turns: 1
+
+augmentation:
+  enabled: true
+  backend: ray_vllm
+  model: Qwen/Qwen2.5-7B-Instruct
+  is_hf_model: true
+  prompt_template: |
+    Rewrite the assistant response into a higher-quality enterprise agent answer.
+
+    {text}
+  batch_size: 64
+  max_concurrency: 8
+  output_field: augmentation
+  output_text_key: distilled_answer
+
+judge:
+  enabled: true
+  backend: ray_vllm
+  model: Qwen/Qwen2.5-7B-Instruct
+  is_hf_model: true
+  prompt_template: |
+    Score this agent-training sample from 0 to 10.
+    Return JSON with keys score and reason.
+
+    {text}
+  batch_size: 32
+  max_concurrency: 8
+  min_score: 7.0
+
+export:
+  path: /data/agent/cleaned/agent_train_ray_vllm.parquet

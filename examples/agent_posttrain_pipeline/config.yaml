@@ -1,0 +1,44 @@
+sources:
+  - path: /home/whr/pp/main/agent_data_clean/examples/agent_posttrain_pipeline/data/agent-demo.jsonl
+    adapter:
+      source_name: demo_agent
+      id_key: id
+      messages_key: messages
+
+runtime:
+  work_dir: /home/whr/pp/main/agent_data_clean/outputs/agent_posttrain_pipeline
+  num_proc: 1
+
+sharding:
+  enabled: true
+  rows_per_shard: 2
+  export_type: jsonl
+
+contamination:
+  enabled: true
+  reference_sources:
+    - path: /home/whr/pp/main/agent_data_clean/examples/agent_posttrain_pipeline/data/agent-demo-reference.jsonl
+      adapter:
+        source_name: demo_reference
+        text_key: text
+  ngram_size: 5
+  max_contamination_ratio: 0.3
+
+quality:
+  enabled: true
+  min_tokens: 4
+  max_tokens: 4096
+  min_turns: 1
+  min_assistant_turns: 1
+
+augmentation:
+  enabled: false
+
+judge:
+  enabled: false
+
+export:
+  path: /home/whr/pp/main/agent_data_clean/outputs/agent_posttrain_pipeline/cleaned.jsonl
+
+visualization:
+  enabled: true

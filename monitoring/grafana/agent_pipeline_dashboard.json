@@ -1,0 +1,35 @@
+{
+  "title": "Agent Post-Training Pipeline",
+  "timezone": "browser",
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Pipeline Success",
+      "targets": [
+        {
+          "expr": "agent_pipeline_run_success{job=\"agent_posttrain_pipeline\"}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Stage Duration Seconds",
+      "targets": [
+        {
+          "expr": "agent_pipeline_stage_duration_seconds{job=\"agent_posttrain_pipeline\"}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Stage Rows",
+      "targets": [
+        {
+          "expr": "agent_pipeline_stage_rows{job=\"agent_posttrain_pipeline\"}"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 39,
+  "version": 1
+}

@@ -1,0 +1,3 @@
+{"id":"sample-1","messages":[{"role":"user","content":"Plan a safe rollout for a breaking API change."},{"role":"assistant","content":"Start with schema versioning, shadow traffic, and rollback hooks."}]}
+{"id":"sample-2","messages":[{"role":"user","content":"Summarize the incident timeline."},{"role":"assistant","content":"The service degraded after deploy, alerts fired, and the team rolled back."}]}
+{"id":"sample-3","messages":[{"role":"user","content":"Plan a safe rollout for a breaking API change."},{"role":"assistant","content":"Start with schema versioning, shadow traffic, and rollback hooks."}]}

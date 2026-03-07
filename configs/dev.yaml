@@ -1,0 +1,49 @@
+sources:
+  - path: /home/whr/pp/main/agent_data_clean/examples/agent_posttrain_pipeline/data/agent-demo.jsonl
+    adapter:
+      source_name: demo_agent
+      id_key: id
+      messages_key: messages
+
+runtime:
+  work_dir: /home/whr/pp/main/agent_data_clean/outputs/agent_posttrain_pipeline_dev
+  num_proc: 1
+
+sharding:
+  enabled: true
+  rows_per_shard: 2
+  export_type: jsonl
+
+contamination:
+  enabled: true
+  reference_sources:
+    - path: /home/whr/pp/main/agent_data_clean/examples/agent_posttrain_pipeline/data/agent-demo-reference.jsonl
+      adapter:
+        source_name: demo_reference
+        text_key: text
+  ngram_size: 5
+  max_contamination_ratio: 0.3
+
+quality:
+  enabled: true
+  hf_tokenizer: null
+  min_tokens: 4
+  max_tokens: 4096
+  min_turns: 1
+  min_assistant_turns: 1
+  percentiles: [0.1, 0.5, 0.9]
+  sample_for_report: 100
+
+export:
+  path: /home/whr/pp/main/agent_data_clean/outputs/agent_posttrain_pipeline_dev/cleaned.jsonl
+
+visualization:
+  enabled: true
+  output_dir: /home/whr/pp/main/agent_data_clean/outputs/agent_posttrain_pipeline_dev/visualizations
+
+monitoring:
+  enabled: true
+  output_dir: /home/whr/pp/main/agent_data_clean/outputs/agent_posttrain_pipeline_dev/monitoring
+  job_name: agent_posttrain_pipeline
+  labels:
+    env: dev

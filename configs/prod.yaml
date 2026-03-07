@@ -1,0 +1,86 @@
+sources:
+  - path: /data/agent/train_data.jsonl
+    adapter:
+      source_name: prod_agent
+      id_key: id
+      messages_key: messages
+      metadata_key: metadata
+
+runtime:
+  work_dir: /var/lib/agent-posttrain-pipeline
+  num_proc: 8
+
+sharding:
+  enabled: true
+  rows_per_shard: 100000
+  export_type: parquet
+
+dedup:
+  enabled: true
+  tokenization: sentencepiece
+  window_size: 5
+  lowercase: true
+  tokenizer_model: null
+  num_permutations: 256
+  jaccard_threshold: 0.82
+
+contamination:
+  enabled: true
+  reference_sources:
+    - path: /data/benchmarks/eval_holdout.jsonl
+      adapter:
+        source_name: eval_holdout
+        text_key: text
+  ngram_size: 13
+  max_contamination_ratio: 0.08
+  min_matched_ngrams: 2
+  normalize_case: true
+  strip_punctuation: true
+
+quality:
+  enabled: true
+  hf_tokenizer: Qwen/Qwen2.5-7B-Instruct
+  min_tokens: 32
+  max_tokens: 16384
+  min_turns: 2
+  max_turns: 64
+  min_assistant_turns: 1
+  percentiles: [0.01, 0.1, 0.25, 0.5, 0.75, 0.9, 0.99]
+  sample_for_report: 5000
+
+judge:
+  enabled: true
+  backend: async_http
+  model: gpt-4o-mini
+  base_url: https://api.openai.com/v1
+  api_key_env: OPENAI_API_KEY
+  prompt_template: |
+    You are a strict enterprise judge for agent training trajectories.
+    Evaluate correctness, safety, tool-use consistency, and traceability.
+    Return strict JSON with keys score and reason.
+
+    {text}
+  batch_size: 32
+  max_concurrency: 32
+  min_score: 7.5
+
+export:
+  path: /data/agent/cleaned/agent_train_cleaned.parquet
+  export_type: parquet
+  export_shard_size: 1073741824
+  export_stats: true
+  keep_stats_in_result: false
+  keep_hashes_in_result: false
+
+visualization:
+  enabled: true
+  output_dir: /var/lib/agent-posttrain-pipeline/visualizations
+  include_samples: 500
+
+monitoring:
+  enabled: true
+  output_dir: /var/lib/agent-posttrain-pipeline/monitoring
+  job_name: agent_posttrain_pipeline
+  labels:
+    env: prod
+    team: agent-platform

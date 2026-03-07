@@ -1,0 +1,19 @@
+groups:
+  - name: agent-posttrain-pipeline
+    rules:
+      - alert: AgentPipelineFailed
+        expr: agent_pipeline_run_success{job="agent_posttrain_pipeline"} == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Agent post-training pipeline failed"
+          description: "The latest agent data pipeline run reported failure."
+      - alert: AgentPipelineSlowStage
+        expr: max_over_time(agent_pipeline_stage_duration_seconds{job="agent_posttrain_pipeline"}[1h]) > 1800
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Agent pipeline stage is slow"
+          description: "A pipeline stage exceeded 30 minutes within the last hour."

@@ -1,0 +1,98 @@
+# Quick-reuse template for switching Data-Juicer-backed capabilities by config only.
+
+sources:
+  - path: /home/whr/pp/main/agent_data_clean/examples/agent_posttrain_pipeline/data/agent-demo.jsonl
+    # format: jsonl
+    adapter:
+      source_name: demo_agent_jsonl
+      id_key: id
+      messages_key: messages
+
+  # CSV example
+  # - path: /data/agent.csv
+  #   format: csv
+  #   adapter:
+  #     source_name: demo_agent_csv
+  #     prompt_key: prompt
+  #     response_key: response
+
+  # Parquet example
+  # - path: /data/agent.parquet
+  #   format: parquet
+  #   adapter:
+  #     source_name: demo_agent_parquet
+  #     text_key: text
+
+  # Arrow / Feather example
+  # - path: /data/agent.arrow
+  #   format: arrow
+  #   adapter:
+  #     source_name: demo_agent_arrow
+  #     text_key: text
+
+runtime:
+  work_dir: /home/whr/pp/main/agent_data_clean/outputs/agent_posttrain_pipeline_reuse
+  num_proc: 1
+
+sharding:
+  enabled: true
+  rows_per_shard: 2
+  export_type: jsonl
+
+dedup:
+  enabled: true
+  tokenization: space
+  window_size: 5
+  lowercase: true
+  num_permutations: 256
+  jaccard_threshold: 0.8
+
+contamination:
+  enabled: true
+  reference_sources:
+    - path: /home/whr/pp/main/agent_data_clean/examples/agent_posttrain_pipeline/data/agent-demo-reference.jsonl
+      adapter:
+        source_name: demo_reference
+        text_key: text
+  ngram_size: 5
+  max_contamination_ratio: 0.3
+  min_matched_ngrams: 1
+
+quality:
+  enabled: true
+  hf_tokenizer: null
+  min_tokens: 4
+  max_tokens: 4096
+  min_turns: 1
+  min_assistant_turns: 1
+
+augmentation:
+  enabled: false
+
+judge:
+  enabled: false
+
+export:
+  path: /home/whr/pp/main/agent_data_clean/outputs/agent_posttrain_pipeline_reuse/cleaned.parquet
+  export_type: null
+  export_shard_size: 0
+
+visualization:
+  enabled: true
+
+monitoring:
+  enabled: true
+  labels:
+    env: reuse-demo
+
+# Data-Juicer operator example:
+# operators:
+#   - hook: post_quality
+#     name: alnum_gate
+#     class_path: data_juicer.ops.filter.alphanumeric_filter.AlphanumericFilter
+#     init_kwargs:
+#       text_key: text
+#       min_ratio: 0.5
+
+# Another example: if you disable built-in dedup, you can inject another operator at post_dedup.
+operators: []
